@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quran Kareem - Personal Website</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel:wght@400..900&family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Custom Config for Tailwind -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#0f172a',
+                        primary: '#d4af37', // Gold
+                        'primary-foreground': '#0f172a',
+                        muted: '#1e293b',
+                        'muted-foreground': '#94a3b8',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Cinzel', 'serif'],
+                        arabic: ['Amiri', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Custom Styles & Animations */
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow: hidden; /* No scroll on body */
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d4af37;
+        }
+
+        /* Hide scrollbar for horizontal scrolling areas */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .animate-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .hidden-section {
+            display: none !important;
+        }
+        
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-active {
+            background-color: rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.2);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+        
+        .nav-item {
+            transition: all 0.3s ease;
+        }
+        
+        .nav-item:hover:not(.nav-active) {
+            background-color: rgba(255, 255, 255, 0.05);
+            transform: scale(1.05);
+        }
+
+        .nav-active i {
+            transform: scale(1.1);
+        }
+
+        /* Particles */
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: pulse 4s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(1.5); }
+            100% { opacity: 0.3; transform: scale(1); }
+        }
+
+        /* Reading Mode Overlay */
+        #reading-overlay {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #reading-overlay.hidden-overlay {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+        #reading-overlay.visible-overlay {
+            opacity: 1;
+            pointer-events: auto;
+            transform: scale(1);
+        }
+    </style>
+</head>
+<body class="h-screen w-screen relative selection:bg-primary/30">
+
+    <!-- Background -->
+    <div class="absolute inset-0 z-0 bg-cover bg-center opacity-40 mix-blend-overlay" style="background-image: url('background.png');"></div>
+    <div class="absolute inset-0 z-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/80 to-transparent"></div>
+
+    <!-- Particles -->
+    <div class="absolute inset-0 z-0 pointer-events-none">
+        <div class="particle bg-primary top-1/4 left-1/4 w-1 h-1 shadow-[0_0_10px_#d4af37]"></div>
+        <div class="particle bg-primary top-1/3 right-1/4 w-1.5 h-1.5 animation-delay-700 shadow-[0_0_15px_#d4af37]"></div>
+        <div class="particle bg-white bottom-1/3 left-1/3 w-1 h-1 animation-delay-300"></div>
+    </div>
+
+    <!-- FULL PAGE READING OVERLAY -->
+    <div id="reading-overlay" class="fixed inset-0 z-50 bg-[#0f172a] flex flex-col hidden-overlay">
+        <!-- Reading Header -->
+        <div class="flex items-center justify-between p-6 border-b border-white/10 bg-black/20 backdrop-blur-md">
+            <button onclick="closeReadingMode()" class="p-2 rounded-full hover:bg-white/10 transition-colors flex items-center gap-2 text-primary">
+                <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                <span class="text-sm font-medium uppercase tracking-wider">Exit Reading</span>
+            </button>
+            <h2 class="text-xl font-serif text-white">Surah Reading</h2>
+            <div class="w-10"></div> <!-- Spacer -->
+        </div>
+
+        <!-- Reading Content -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-12 custom-scrollbar">
+            <div id="reading-content" class="max-w-3xl mx-auto space-y-12 pb-20">
+                <!-- Content injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main id="main-stage" class="relative z-10 flex flex-col items-center justify-center h-full p-4 md:p-8 transition-opacity duration-500">
+        
+        <!-- Window Container -->
+        <div id="content-window" class="glass-panel w-full max-w-4xl max-h-[70vh] md:max-h-[80vh] rounded-3xl shadow-2xl shadow-black/50 overflow-hidden flex flex-col animate-in">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-white/5 shrink-0">
+                <h2 id="section-title" class="text-xl md:text-2xl font-serif text-primary tracking-wide">Home</h2>
+                <div class="flex gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+                </div>
+            </div>
+
+            <!-- Content Body -->
+            <div class="flex-1 overflow-y-auto p-6 md:p-10 custom-scrollbar relative">
+                
+                <!-- HOME SECTION -->
+                <div id="section-home" class="section-content flex flex-col items-center text-center space-y-8">
+                    <div class="space-y-4 max-w-2xl">
+                        <h1 class="text-4xl md:text-6xl font-serif text-white drop-shadow-lg">Welcome</h1>
+                        <p class="text-lg md:text-xl text-muted-foreground leading-relaxed font-light">
+                            "Indeed, in the remembrance of Allah do hearts find rest."
+                        </p>
+                        <div class="h-px w-24 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto opacity-50 my-6"></div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full text-left">
+                        <div class="p-6 rounded-xl bg-white/5 border border-white/5 hover:border-primary/30 transition-colors">
+                            <h3 class="text-xl font-serif text-primary mb-2">Daily Verse</h3>
+                            <p class="text-sm text-gray-300 italic">"So remember Me; I will remember you. And be grateful to Me and do not deny Me."</p>
+                            <span class="block mt-4 text-xs text-primary/70 uppercase tracking-widest font-bold">Surah Al-Baqarah 2:152</span>
+                        </div>
+                        <div class="p-6 rounded-xl bg-white/5 border border-white/5 hover:border-primary/30 transition-colors">
+                            <h3 class="text-xl font-serif text-primary mb-2">Today's Goal</h3>
+                            <p class="text-sm text-gray-300">Read Surah Al-Kahf.</p>
+                            <div class="w-full bg-white/10 h-1.5 mt-4 rounded-full overflow-hidden">
+                                <div class="bg-primary h-full w-[40%]"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QURAN TEXT SECTION -->
+                <div id="section-quran-text" class="section-content hidden-section space-y-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-3xl font-serif text-white">Surah Index</h2>
+                        <div class="text-sm text-muted-foreground">Select to Read</div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="surah-grid">
+                         <div onclick="openReadingMode(1)" class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/30 cursor-pointer transition-all active:scale-95">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-bold font-serif border border-primary/20">1</div>
+                                <div><h4 class="font-bold text-lg text-white">Al-Fatiha</h4><p class="text-xs text-muted-foreground">The Opener</p></div>
+                            </div>
+                            <div class="text-right"><span class="text-xl font-arabic text-white/80">الفاتحة</span><p class="text-[10px] text-muted-foreground uppercase">Meccan • 7 Verses</p></div>
+                        </div>
+                        <div onclick="openReadingMode(112)" class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/30 cursor-pointer transition-all active:scale-95">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-bold font-serif border border-primary/20">112</div>
+                                <div><h4 class="font-bold text-lg text-white">Al-Ikhlas</h4><p class="text-xs text-muted-foreground">The Sincerity</p></div>
+                            </div>
+                            <div class="text-right"><span class="text-xl font-arabic text-white/80">الإخلاص</span><p class="text-[10px] text-muted-foreground uppercase">Meccan • 4 Verses</p></div>
+                        </div>
+                        <div onclick="openReadingMode(114)" class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-primary/30 cursor-pointer transition-all active:scale-95">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-bold font-serif border border-primary/20">114</div>
+                                <div><h4 class="font-bold text-lg text-white">An-Nas</h4><p class="text-xs text-muted-foreground">The Mankind</p></div>
+                            </div>
+                            <div class="text-right"><span class="text-xl font-arabic text-white/80">الناس</span><p class="text-[10px] text-muted-foreground uppercase">Meccan • 6 Verses</p></div>
+                        </div>
+                        <!-- Other Surahs (Not clickable for demo) -->
+                        <div class="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 opacity-60">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary font-bold font-serif border border-primary/20">2</div>
+                                <div><h4 class="font-bold text-lg text-white">Al-Baqarah</h4><p class="text-xs text-muted-foreground">The Cow</p></div>
+                            </div>
+                            <div class="text-right"><span class="text-xl font-arabic text-white/80">البقرة</span><p class="text-[10px] text-muted-foreground uppercase">Medinan • 286 Verses</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- QURAN AUDIO SECTION -->
+                <div id="section-quran-audio" class="section-content hidden-section space-y-8">
+                    <audio id="audio-player"></audio>
+
+                    <!-- Reciter Selector -->
+                    <div class="flex bg-black/20 p-1 rounded-xl border border-white/5">
+                        <button onclick="setReciter('dosari')" id="reciter-dosari" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all bg-primary text-black shadow-lg">Sheikh Yasser</button>
+                        <button onclick="setReciter('qatami')" id="reciter-qatami" class="flex-1 py-2 text-sm font-medium rounded-lg transition-all text-muted-foreground hover:text-white hover:bg-white/5">Sheikh Nasser</button>
+                    </div>
+
+                    <!-- Surah Selector -->
+                    <div class="flex gap-2 overflow-x-auto pb-2 no-scrollbar" id="audio-surah-list">
+                        <button onclick="setAudioSurah(1)" id="audio-surah-1" class="px-4 py-2 rounded-full border text-sm whitespace-nowrap transition-colors bg-white/10 border-primary text-primary">Al-Fatihah</button>
+                        <button onclick="setAudioSurah(112)" id="audio-surah-112" class="px-4 py-2 rounded-full border text-sm whitespace-nowrap transition-colors bg-transparent border-white/10 text-muted-foreground hover:border-white/30 hover:text-white">Al-Ikhlas</button>
+                        <button onclick="setAudioSurah(114)" id="audio-surah-114" class="px-4 py-2 rounded-full border text-sm whitespace-nowrap transition-colors bg-transparent border-white/10 text-muted-foreground hover:border-white/30 hover:text-white">An-Nas</button>
+                    </div>
+
+                    <div class="bg-gradient-to-b from-primary/20 to-transparent p-6 md:p-8 rounded-2xl border border-primary/10 text-center space-y-6">
+                        <div class="w-32 h-32 md:w-48 md:h-48 mx-auto rounded-full bg-black/40 border-4 border-primary/20 flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.5)] relative">
+                           <div id="audio-pulse" class="absolute inset-0 rounded-full border-2 border-primary/50 animate-ping opacity-0"></div>
+                           <i data-lucide="music" id="audio-icon" class="w-16 h-16 text-primary/50 transition-all duration-700"></i>
+                        </div>
+                        
+                        <div class="space-y-2">
+                          <h3 id="audio-title" class="text-2xl md:text-3xl font-serif text-white">Al-Fatihah</h3>
+                          <p id="audio-reciter-name" class="text-primary font-medium">Yasser Al-Dosari</p>
+                        </div>
+                
+                        <!-- Controls -->
+                        <div class="flex items-center justify-center gap-6 md:gap-10">
+                          <button onclick="toggleRepeat()" id="btn-repeat" class="p-2 transition-colors text-white/30 hover:text-white" title="Repeat Surah">
+                              <i data-lucide="repeat" class="w-5 h-5"></i>
+                          </button>
+                          
+                          <button onclick="togglePlay()" class="flex items-center justify-center w-16 h-16 rounded-full bg-primary text-black hover:scale-105 transition-transform shadow-[0_0_20px_#d4af37]">
+                            <i id="btn-play-icon" data-lucide="play" class="w-8 h-8 fill-current translate-x-0.5"></i>
+                          </button>
+
+                          <button class="p-2 text-white/30 hover:text-white transition-colors">
+                              <i data-lucide="share-2" class="w-5 h-5"></i>
+                          </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Floating Navbar -->
+    <nav id="main-nav" class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 transition-all duration-500">
+        <div class="flex items-center gap-2 p-2 rounded-2xl glass-panel shadow-2xl shadow-primary/10">
+            
+            <button onclick="switchTab('quran-text')" id="btn-quran-text" class="nav-item relative group flex flex-col items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-xl border border-transparent text-muted-foreground">
+                <i data-lucide="book-open" class="w-6 h-6 md:w-8 md:h-8 mb-2"></i>
+                <span class="text-[10px] md:text-xs font-medium tracking-wider uppercase opacity-80">Quran</span>
+            </button>
+
+            <button onclick="switchTab('home')" id="btn-home" class="nav-item nav-active relative group flex flex-col items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-xl border border-transparent text-muted-foreground">
+                <i data-lucide="home" class="w-6 h-6 md:w-8 md:h-8 mb-2"></i>
+                <span class="text-[10px] md:text-xs font-medium tracking-wider uppercase opacity-80">Home</span>
+            </button>
+
+            <button onclick="switchTab('quran-audio')" id="btn-quran-audio" class="nav-item relative group flex flex-col items-center justify-center w-20 h-20 md:w-24 md:h-24 rounded-xl border border-transparent text-muted-foreground">
+                <i data-lucide="music" class="w-6 h-6 md:w-8 md:h-8 mb-2"></i>
+                <span class="text-[10px] md:text-xs font-medium tracking-wider uppercase opacity-80">MP3</span>
+            </button>
+
+        </div>
+    </nav>
+
+    <script>
+        // --- DATA ---
+        const SURAH_TEXTS = {
+            1: {
+                arabic: [
+                    "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+                    "ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَـٰلَمِينَ",
+                    "ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+                    "مَـٰلِكِ يَوْمِ ٱلدِّينِ",
+                    "إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ",
+                    "ٱهْدِنَا ٱلصِّرَٰطَ ٱلْمُسْتَقِيمَ",
+                    "صِرَٰطَ ٱلَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ ٱلْمَغْضُوبِ عَلَيْهِمْ وَلَا ٱلضَّالِّينَ"
+                ],
+                translation: [
+                    "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
+                    "[All] praise is [due] to Allah, Lord of the worlds -",
+                    "The Entirely Merciful, the Especially Merciful,",
+                    "Sovereign of the Day of Recompense.",
+                    "It is You we worship and You we ask for help.",
+                    "Guide us to the straight path -",
+                    "The path of those upon whom You have bestowed favor, not of those who have evoked [Your] anger or of those who are astray."
+                ]
+            },
+            112: {
+                arabic: [
+                    "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+                    "قُلْ هُوَ ٱللَّهُ أَحَدٌ",
+                    "ٱللَّهُ ٱلصَّمَدُ",
+                    "لَمْ يَلِدْ وَلَمْ يُولَدْ",
+                    "وَلَمْ يَكُن لَّهُۥ كُفُوًا أَحَدٌۢ"
+                ],
+                translation: [
+                    "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
+                    "Say, \"He is Allah, [who is] One,",
+                    "Allah, the Eternal Refuge.",
+                    "He neither begets nor is born,",
+                    "Nor is there to Him any equivalent.\""
+                ]
+            },
+            114: {
+                arabic: [
+                    "بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ",
+                    "قُلْ أَعُوذُ بِرَبِّ ٱلنَّاسِ",
+                    "مَلِكِ ٱلنَّاسِ",
+                    "إِلَـٰهِ ٱلنَّاسِ",
+                    "مِن شَرِّ ٱلْوَسْوَاسِ ٱلْخَنَّاسِ",
+                    "ٱلَّذِى يُوَسْوِسُ فِى صُدُورِ ٱلنَّاسِ",
+                    "مِنَ ٱلْجِنَّةِ وَٱلنَّاسِ"
+                ],
+                translation: [
+                    "In the name of Allah, the Entirely Merciful, the Especially Merciful.",
+                    "Say, \"I seek refuge in the Lord of mankind,",
+                    "The Sovereign of mankind,",
+                    "The God of mankind,",
+                    "From the evil of the retreating whisperer -",
+                    "Who whispers [evil] into the breasts of mankind -",
+                    "From among the jinn and mankind.\""
+                ]
+            }
+        };
+
+        const AUDIO_SOURCES = {
+            dosari: {
+                1: "https://server8.mp3quran.net/yasser/001.mp3",
+                112: "https://server8.mp3quran.net/yasser/112.mp3",
+                114: "https://server8.mp3quran.net/yasser/114.mp3"
+            },
+            qatami: {
+                1: "https://server8.mp3quran.net/qatami/001.mp3",
+                112: "https://server8.mp3quran.net/qatami/112.mp3",
+                114: "https://server8.mp3quran.net/qatami/114.mp3"
+            }
+        };
+
+        // --- STATE ---
+        let currentReciter = 'dosari';
+        let currentAudioSurah = 1;
+        let isRepeatMode = false;
+
+        // Initialize Icons
+        lucide.createIcons();
+
+        // --- UI LOGIC ---
+
+        function switchTab(tabId) {
+            const titles = {
+                'home': 'Home',
+                'quran-text': 'Quran Kareem',
+                'quran-audio': 'Quran MP3'
+            };
+            document.getElementById('section-title').textContent = titles[tabId];
+
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('nav-active'));
+            document.getElementById('btn-' + tabId).classList.add('nav-active');
+
+            document.querySelectorAll('.section-content').forEach(el => {
+                el.classList.add('hidden-section');
+                el.classList.remove('animate-in');
+            });
+
+            const activeSection = document.getElementById('section-' + tabId);
+            activeSection.classList.remove('hidden-section');
+            void activeSection.offsetWidth; 
+            activeSection.classList.add('animate-in');
+
+            // Initialize Audio if needed
+            if (tabId === 'quran-audio') {
+                updateAudioPlayerSource();
+            } else {
+                // Pause audio when leaving tab? Optional. keeping playing is better for UX.
+            }
+        }
+
+        // --- READING MODE LOGIC ---
+
+        function openReadingMode(surahId) {
+            const data = SURAH_TEXTS[surahId];
+            if (!data) {
+                alert("Text not available yet for this Surah.");
+                return;
+            }
+
+            const container = document.getElementById('reading-content');
+            container.innerHTML = ''; // Clear previous
+
+            // Add Bismillah/Title
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'text-center mb-12';
+            titleDiv.innerHTML = `<h1 class="text-4xl md:text-5xl font-arabic leading-loose text-primary drop-shadow-md">${data.arabic[0]}</h1>`;
+            container.appendChild(titleDiv);
+
+            // Add Verses (skip first Bismillah if it's index 0 in array for display logic)
+            // Note: SURAH_TEXTS data includes Bismillah as index 0.
+            const verses = data.arabic.slice(1);
+            verses.forEach((verse, index) => {
+                const verseEl = document.createElement('div');
+                verseEl.className = 'flex flex-col gap-4 border-b border-white/5 pb-8 last:border-0';
+                verseEl.innerHTML = `
+                    <p class="text-3xl md:text-4xl font-arabic text-right leading-[2.5] text-white">
+                        ${verse} 
+                        <span class="inline-flex items-center justify-center w-8 h-8 mr-2 text-sm border border-primary/40 rounded-full text-primary align-middle font-sans">
+                          ${index + 1}
+                        </span>
+                    </p>
+                    <p class="text-lg text-muted-foreground font-light text-left leading-relaxed pl-4 border-l-2 border-primary/20">
+                        ${data.translation[index + 1]}
+                    </p>
+                `;
+                container.appendChild(verseEl);
+            });
+
+            // Show Overlay
+            const overlay = document.getElementById('reading-overlay');
+            overlay.classList.remove('hidden-overlay');
+            overlay.classList.add('visible-overlay');
+
+            // Hide Main Stage & Nav
+            document.getElementById('main-stage').style.opacity = '0';
+            document.getElementById('main-nav').style.transform = 'translate(-50%, 150%)'; // Move down
+        }
+
+        function closeReadingMode() {
+            const overlay = document.getElementById('reading-overlay');
+            overlay.classList.remove('visible-overlay');
+            overlay.classList.add('hidden-overlay');
+
+            // Show Main Stage & Nav
+            document.getElementById('main-stage').style.opacity = '1';
+            document.getElementById('main-nav').style.transform = 'translate(-50%, 0)';
+        }
+
+
+        // --- AUDIO PLAYER LOGIC ---
+
+        const audioPlayer = document.getElementById('audio-player');
+        
+        audioPlayer.addEventListener('ended', () => {
+            if (isRepeatMode) {
+                audioPlayer.currentTime = 0;
+                audioPlayer.play();
+            } else {
+                updatePlayButton(false);
+            }
+        });
+
+        audioPlayer.addEventListener('play', () => updatePlayButton(true));
+        audioPlayer.addEventListener('pause', () => updatePlayButton(false));
+
+        function togglePlay() {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+            } else {
+                audioPlayer.pause();
+            }
+        }
+
+        function updatePlayButton(isPlaying) {
+            const icon = document.getElementById('btn-play-icon');
+            const pulse = document.getElementById('audio-pulse');
+            const mainIcon = document.getElementById('audio-icon');
+
+            if (isPlaying) {
+                // Change to Pause Icon (Lucide doesn't allow easy SVG swap without re-render or innerHTML)
+                // We'll just replace the SVG path logic or innerHTML for simplicity in Vanilla
+                // Simulating React's declarative style:
+                // Pause Icon Path: <rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>
+                // Play Icon Path: <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                
+                // Using Lucide's API to replace content might be cleaner if we re-render icons, but here:
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>'; // Pause
+                icon.setAttribute('data-lucide', 'pause'); // Just for consistency
+                
+                pulse.style.opacity = '0.2';
+                mainIcon.classList.add('text-primary', 'scale-110');
+            } else {
+                icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>'; // Play
+                icon.setAttribute('data-lucide', 'play');
+                
+                pulse.style.opacity = '0';
+                mainIcon.classList.remove('text-primary', 'scale-110');
+            }
+        }
+
+        function setReciter(reciterId) {
+            currentReciter = reciterId;
+            
+            // Update Buttons
+            const btnDosari = document.getElementById('reciter-dosari');
+            const btnQatami = document.getElementById('reciter-qatami');
+            
+            if (reciterId === 'dosari') {
+                btnDosari.className = "flex-1 py-2 text-sm font-medium rounded-lg transition-all bg-primary text-black shadow-lg";
+                btnQatami.className = "flex-1 py-2 text-sm font-medium rounded-lg transition-all text-muted-foreground hover:text-white hover:bg-white/5";
+                document.getElementById('audio-reciter-name').textContent = "Yasser Al-Dosari";
+            } else {
+                btnQatami.className = "flex-1 py-2 text-sm font-medium rounded-lg transition-all bg-primary text-black shadow-lg";
+                btnDosari.className = "flex-1 py-2 text-sm font-medium rounded-lg transition-all text-muted-foreground hover:text-white hover:bg-white/5";
+                document.getElementById('audio-reciter-name').textContent = "Nasser Al-Qatami";
+            }
+
+            updateAudioPlayerSource();
+        }
+
+        function setAudioSurah(surahId) {
+            currentAudioSurah = surahId;
+            
+            // Update Buttons
+            [1, 112, 114].forEach(id => {
+                const btn = document.getElementById('audio-surah-' + id);
+                if (id === surahId) {
+                    btn.className = "px-4 py-2 rounded-full border text-sm whitespace-nowrap transition-colors bg-white/10 border-primary text-primary";
+                } else {
+                    btn.className = "px-4 py-2 rounded-full border text-sm whitespace-nowrap transition-colors bg-transparent border-white/10 text-muted-foreground hover:border-white/30 hover:text-white";
+                }
+            });
+
+            // Update Title
+            const names = { 1: "Al-Fatihah", 112: "Al-Ikhlas", 114: "An-Nas" };
+            document.getElementById('audio-title').textContent = names[surahId];
+
+            updateAudioPlayerSource();
+        }
+
+        function updateAudioPlayerSource() {
+            const url = AUDIO_SOURCES[currentReciter][currentAudioSurah];
+            const wasPlaying = !audioPlayer.paused;
+            
+            audioPlayer.src = url;
+            
+            if (wasPlaying) {
+                audioPlayer.play();
+            }
+        }
+
+        function toggleRepeat() {
+            isRepeatMode = !isRepeatMode;
+            const btn = document.getElementById('btn-repeat');
+            if (isRepeatMode) {
+                btn.classList.remove('text-white/30');
+                btn.classList.add('text-primary');
+            } else {
+                btn.classList.add('text-white/30');
+                btn.classList.remove('text-primary');
+            }
+        }
+
+    </script>
+</body>
+</html>
